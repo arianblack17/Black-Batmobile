@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>BLACK BAT — نسخه آزمایشی</title>
+<style>
+:root{--bg:#080b10;--panel:#121923;--line:#2b3544;--gold:#f5c84c;--txt:#f4f6fa;--muted:#aab4c2}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#1b2635,#080b10 65%);color:var(--txt);font-family:Tahoma,Arial,sans-serif;min-height:100vh}
+button,input{font:inherit}button{cursor:pointer;border:1px solid #465365;background:#202b39;color:white;padding:12px 14px;border-radius:12px}button.primary{background:var(--gold);color:#171717;border-color:var(--gold);font-weight:bold}
+header{display:flex;justify-content:space-between;align-items:center;padding:16px;gap:10px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#090d13ed;z-index:3}
+.logo{font-weight:900;letter-spacing:2px;font-size:23px}.logo span{color:var(--gold)}.coins{color:var(--gold);font-weight:bold;white-space:nowrap}
+main{max-width:960px;margin:auto;padding:16px}.hero,.panel{background:linear-gradient(145deg,#17212e,#0e141d);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:16px}
+h1,h2,p{margin-top:0}.muted{color:var(--muted);font-size:14px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.menu-btn{min-height:78px;font-weight:bold;font-size:16px}
+.hidden{display:none!important}.cargrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.car{border:1px solid var(--line);border-radius:14px;padding:12px;background:#0a1018}.car img{width:100%;height:150px;object-fit:cover;object-position:center;border-radius:9px;background:#202a36}.img-fallback{height:150px;display:grid;place-items:center;border-radius:9px;background:#202a36;color:#aab4c2;font-size:13px}.img-credit{display:block;color:#7f8b9b;font-size:10px;margin:4px 0 7px}.price{color:var(--gold);font-weight:bold;margin:8px 0}
+#gameWrap{position:relative;max-width:520px;margin:auto}canvas{display:block;width:100%;height:min(68vh,680px);background:#171d24;border-radius:16px;border:1px solid #3a4552}
+.controls{display:flex;justify-content:space-between;gap:16px;margin-top:12px}.controls button{width:38%;font-size:24px;touch-action:none}.controls .nitro{width:24%;font-size:14px;background:#263d55;border-color:#5a8db8}.race-hud{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:10px 0}.hud-chip{background:#0a111a;border:1px solid #334253;border-radius:10px;padding:8px;text-align:center;font-size:12px}.hud-chip b{display:block;color:var(--gold);font-size:16px;margin-top:3px}.bar{height:7px;background:#253140;border-radius:8px;overflow:hidden;margin-top:5px}.bar i{display:block;height:100%;width:100%;background:#54b7e8}.canvas-label{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;pointer-events:none;font-size:11px;text-shadow:0 2px 4px #000;font-weight:bold}
+.modal{position:fixed;inset:0;background:#000c;display:flex;align-items:center;justify-content:center;padding:20px;z-index:10}.modalbox{max-width:430px;width:100%;background:#111923;border:1px solid #475364;border-radius:20px;padding:24px;text-align:center;box-shadow:0 20px 80px #000}.modalbox input{width:100%;padding:13px;border-radius:10px;border:1px solid #596677;background:#080d14;color:white;margin:10px 0 14px}.bigcoin{font-size:30px;color:var(--gold);font-weight:900}
+footer{text-align:center;color:#788595;font-size:12px;padding:18px}
+@media(max-width:480px){.logo{font-size:19px}.grid{gap:8px}.menu-btn{padding:10px;font-size:14px}.hero{padding:14px}}
+</style>
+</head>
+<body>
+<header><div class="logo">BLACK <span>BAT</span></div><div class="coins">🪙 <b id="coinCount">0</b></div></header>
+<main>
+<section id="home">
+ <div class="hero"><p class="muted">نسخهٔ آزمایشی · رانندگی خیابانی</p><h1>گاراژ BLACK BAT</h1><p>یک خیابان مستقیم، ماشین‌های قابل خرید، جمع‌آوری سکه و ثبت نتیجهٔ مسابقه.</p></div>
+ <div class="grid">
+  <button class="menu-btn" onclick="show('shop')">🚘 خرید ماشین</button>
+  <button class="menu-btn" onclick="show('upgrade')">⚙️ ارتقای ماشین</button>
+  <button class="menu-btn" onclick="show('owned')">🅿️ ماشین‌های من</button>
+  <button class="menu-btn" onclick="show('modes')">🏁 مسابقات</button>
+ </div>
+ <div class="panel" style="margin-top:16px"><h2>ماشین فعال</h2><div id="activeCar">هنوز ماشینی نخریده‌ای؛ از فروشگاه شروع کن.</div></div>
+</section>
+<section id="shop" class="hidden panel"><button onclick="show('home')">← بازگشت</button><h2 style="margin-top:14px">فروشگاه خودرو</h2><p class="muted">تصاویر واقعی مدل‌های خودرو؛ برای نمایش عکس‌ها اتصال اینترنت لازم است.</p><div id="cars" class="cargrid"></div></section>
+<section id="owned" class="hidden panel"><button onclick="show('home')">← بازگشت</button><h2 style="margin-top:14px">ماشین‌های من</h2><div id="ownedCars" class="cargrid"></div></section>
+<section id="upgrade" class="hidden panel"><button onclick="show('home')">← بازگشت</button><h2 style="margin-top:14px">ارتقای ماشین</h2><p id="upgradeInfo">ابتدا یک ماشین بخر و انتخاب کن.</p><div class="grid"><button onclick="upgrade('موتور')">🔧 ارتقای موتور · ۵۰۰ سکه</button><button onclick="upgrade('لاستیک')">🛞 ارتقای لاستیک · ۵۰۰ سکه</button></div></section>
+<section id="modes" class="hidden panel"><button onclick="show('home')">← بازگشت</button><h2 style="margin-top:14px">انتخاب مسابقه</h2><p>در تمام حالت‌ها خیابان مستقیم است؛ سکه جمع کن و از ماشین‌های دیگر دوری کن.</p><div class="grid"><button onclick="startGame('شهری')">🏙️ مسابقهٔ شهری</button><button onclick="startGame('آزاد')">🛣️ رانندگی آزاد</button><button onclick="startGame('حرفه‌ای')">🏎️ حرفه‌ای</button><button onclick="startGame('تمرینی')">🎯 تمرینی</button><button onclick="startGame('رقابت با بات')">🤖 رقابت با بات</button></div></section>
+<section id="race" class="hidden panel"><button onclick="endGame(false)">← خروج از مسابقه</button><h2 id="raceTitle" style="margin-top:14px">مسابقه</h2><div class="race-hud"><div class="hud-chip">سرعت<b id="speedValue">۰ km/h</b></div><div class="hud-chip">رکورد<b id="bestValue">۰</b></div><div class="hud-chip">سکه<b id="raceCoins">۰</b></div></div><div id="gameWrap"><canvas id="game" width="420" height="680"></canvas><div class="canvas-label"><span id="driverLabel">راننده</span><span id="carLabel">ماشین</span></div><div class="controls"><button id="left">⬅️ چپ</button><button id="nitro" class="nitro">⚡ نیترو</button><button id="right">راست ➡️</button></div></div><p id="raceStats" class="muted" style="margin-top:12px">سکه: ۰ · امتیاز: ۰ · جان: ۳</p><div class="bar"><i id="nitroBar"></i></div><p class="muted">نوار آبی: شارژ نیترو · با دکمهٔ نیترو سرعت بگیر.</p></section>
+</main>
+<footer>BLACK BAT · نمونهٔ آزمایشی HTML · پیشرفت در همین مرورگر ذخیره می‌شود.</footer>
+<div id="welcome" class="modal"><div class="modalbox"><div class="logo">BLACK <span>BAT</span></div><h2>به دنیای مسابقه خوش آمدی</h2><p>نام راننده‌ات را وارد کن:</p><input id="driverName" maxlength="24" placeholder="مثلاً آریان"><button class="primary" style="width:100%" onclick="enterGame()">ورود به بازی</button></div></div>
+<div id="gift" class="modal hidden"><div class="modalbox"><div class="logo">BLACK <span>BAT</span></div><h2 id="welcomeText">خوش آمدی!</h2><p>به عنوان هدیهٔ ورود،</p><div class="bigcoin">۲٬۰۰۰ سکه</div><p>به تو تقدیم می‌کنیم! 🪙</p><button class="primary" style="width:100%" onclick="closeGift()">شروع بازی</button></div></div>
+<div id="result" class="modal hidden"><div class="modalbox"><h2 id="resultTitle">نتیجهٔ مسابقه</h2><p id="resultText"></p><button class="primary" style="width:100%" onclick="closeResult()">ادامه</button></div></div>
+<script>
+const data=[
+{name:'پیکان',price:1500,img:'https://commons.wikimedia.org/wiki/Special:FilePath/Peykan%20(Car),%20Iran%20(2022).jpg?width=900',credit:'Wikimedia Commons'},
+{name:'پراید',price:2000,img:'https://www.ir-luxecars.com/wp-content/uploads/2022/01/Pride-IR-Luxecars.jpg',credit:'IR-Luxecars'},
+{name:'پژو ۲۰۶',price:2500,img:'https://i0.wp.com/bestsellingcarsblog.com/wp-content/uploads/2011/09/Peugeot-206-Iran-2011.jpg',credit:'Best Selling Cars Blog'},
+{name:'پژو ۴۰۵',price:3000,img:'https://upload.wikimedia.org/wikipedia/commons/0/0d/Peugeot_405_SLX_02_2024-08-06.jpg',credit:'Wikimedia Commons'},
+{name:'سمند',price:3500,img:'https://i.auto-bild.de/ir_img/5/4/9/2/0/9/Iran-Khodro-IKCO-Samand-729x486-e2d7e42b8def8a1a.jpg?impolicy=leadteaser',credit:'AUTO BILD'},
+{name:'کوییک',price:3500,img:'https://gadgetnews.net/wp-content/uploads/2022/09/Quick-1-620x465.jpg',credit:'Gadget News'},
+{name:'پژو پارس (پرشیا)',price:4000,img:'https://avatars.mds.yandex.net/get-vertis-journal/4469561/2108718.webp_1701097258218/orig',credit:'Yandex / Auto.ru'},
+{name:'کیا ریو',price:4500,img:'https://www.charcharkh.com/uploads/2022/01/r0-c0a4-62655-18536-1.jpg',credit:'Charcharkh'},
+{name:'پیکاپ باردو',price:3500,img:'https://www.mad4wheels.com/img/free-car-images/mobile/10775/iran-khodro-bardo-2008-350284.jpg',credit:'Mad4Wheels'}
+];
+let state=JSON.parse(localStorage.getItem('bb-proto')||'null')||{coins:0,name:'',gift:false,owned:[],active:null,upgrades:{},best:0};
+function save(){localStorage.setItem('bb-proto',JSON.stringify(state));document.getElementById('coinCount').textContent=state.coins.toLocaleString('fa-IR');render()}
+function show(id){['home','shop','upgrade','owned','modes','race'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));render()}
+function enterGame(){let n=document.getElementById('driverName').value.trim();if(!n){alert('لطفاً نام راننده را وارد کن.');return}state.name=n;if(!state.gift){document.getElementById('welcome').classList.add('hidden');document.getElementById('welcomeText').textContent=''+n+' جان، به BLACK BAT خوش آمدی!';state.coins+=2000;state.gift=true;save();document.getElementById('gift').classList.remove('hidden')}else{document.getElementById('welcome').classList.add('hidden');show('home');save()}}
+function closeGift(){document.getElementById('gift').classList.add('hidden');show('home');save()}
+function render(){document.getElementById('coinCount').textContent=state.coins.toLocaleString('fa-IR');document.getElementById('cars').innerHTML=data.map((c,i)=>`<div class="car"><img src="${c.img}" alt="${c.name}" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<div class=\'img-fallback\'>عکس خودرو بارگذاری نشد</div>'"><small class="img-credit">منبع عکس: ${c.credit}</small><b>${c.name}</b><div class="price">🪙 ${c.price.toLocaleString('fa-IR')}</div><button class="primary" onclick="buy(${i})">${state.owned.includes(i)?(state.active===i?'ماشین فعال':'انتخاب خودرو'):'خرید خودرو'}</button></div>`).join('');document.getElementById('ownedCars').innerHTML=state.owned.length?state.owned.map(i=>`<div class="car"><img src="${data[i].img}" alt="${data[i].name}" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<div class=\'img-fallback\'>عکس خودرو بارگذاری نشد</div>'"><small class="img-credit">منبع عکس: ${data[i].credit}</small><b>${data[i].name}</b><p class="price">🪙 ${data[i].price.toLocaleString('fa-IR')}</p><button onclick="selectCar(${i})">${state.active===i?'فعال است':'انتخاب برای رانندگی'}</button></div>`).join(''):'<p>هنوز ماشینی نخریده‌ای.</p>';document.getElementById('activeCar').textContent=state.active===null?'هنوز ماشینی نخریده‌ای؛ از فروشگاه شروع کن.':data[state.active].name;document.getElementById('upgradeInfo').textContent=state.active===null?'ابتدا یک ماشین بخر و انتخاب کن.':`خودروی انتخاب‌شده: ${data[state.active].name} · ارتقاها: ${(state.upgrades[state.active]||[]).join('، ')||'ندارد'}`}
+function buy(i){if(state.owned.includes(i)){selectCar(i);return}if(state.coins<data[i].price){alert('سکه کافی نداری.');return}state.coins-=data[i].price;state.owned.push(i);state.active=i;save();alert(data[i].name+' با موفقیت خریداری شد.')}
+function selectCar(i){state.active=i;save()}
+function upgrade(t){if(state.active===null){alert('اول یک ماشین بخر.');return}if(state.coins<500){alert('سکه کافی نیست.');return}state.coins-=500;(state.upgrades[state.active]||=[]).push(t);save();alert('ارتقای '+t+' انجام شد.')}
+let ctx,raf=null,game={running:false,x:210,coins:0,score:0,life:3,frame:0,objects:[],mode:'شهری',left:false,right:false,speed:4,lastHitFrame:-999,nitro:100,nitroOn:false,hitFlash:0};
+const canvas=document.getElementById('game');ctx=canvas.getContext('2d');
+const road={left:45,right:375,top:0,bottom:680};
+function startGame(mode){
+ if(state.active===null){alert('برای شروع مسابقه ابتدا از فروشگاه یک ماشین بخر.');show('shop');return}
+ game={running:true,x:210,coins:0,score:0,life:3,frame:0,objects:[],mode,left:false,right:false,speed:mode==='حرفه‌ای'?5.2:(mode==='تمرینی'?3.4:4),lastHitFrame:-999,nitro:100,nitroOn:false,hitFlash:0};
+ document.getElementById('raceTitle').textContent='مسابقهٔ '+mode;
+ document.getElementById('driverLabel').textContent=state.name||'راننده';
+ document.getElementById('carLabel').textContent=data[state.active].name;
+ document.getElementById('bestValue').textContent=Number(state.best||0).toLocaleString('fa-IR');
+ show('race');cancelAnimationFrame(raf);tick();
+}
+function roundedRect(c,x,y,w,h,r){c.beginPath();c.roundRect(x,y,w,h,r);}
+function drawCitySide(yOffset){
+ // sidewalks and planted verges
+ ctx.fillStyle='#777a78';ctx.fillRect(0,0,45,680);ctx.fillRect(375,0,45,680);
+ ctx.fillStyle='#c4bca9';ctx.fillRect(0,0,7,680);ctx.fillRect(413,0,7,680);
+ ctx.fillStyle='#4d6949';ctx.fillRect(8,0,29,680);ctx.fillRect(383,0,29,680);
+ for(let y=-90+(yOffset%230);y<730;y+=230){
+   // building blocks, Tehran-style shop fronts and apartment windows
+   for(const side of [0,1]){
+     const bx=side?385:8, bw=27;
+     const shade=(Math.floor((y+90)/230)%2===0)?'#b7a58e':'#8f9a9b';
+     ctx.fillStyle='#252c32';ctx.fillRect(bx-2,y+5,bw+4,122);
+     ctx.fillStyle=shade;ctx.fillRect(bx,y+8,bw,116);
+     ctx.fillStyle='#3c4a54';
+     for(let wy=0;wy<3;wy++)for(let wx=0;wx<2;wx++)ctx.fillRect(bx+4+wx*12,y+18+wy*25,7,13);
+     ctx.fillStyle='#6a4732';ctx.fillRect(bx+5,y+94,17,29);
+     ctx.fillStyle='#d8d0bf';ctx.fillRect(bx+2,y+80,23,9);
+     ctx.fillStyle='#3a322a';ctx.font='bold 6px Tahoma';ctx.fillText('TEHRAN',bx+3,y+87);
+     // tree and lamp post
+     const tx=side?378:39;
+     ctx.fillStyle='#5a4632';ctx.fillRect(tx-2,y+139,4,17);
+     ctx.fillStyle='#315b38';ctx.beginPath();ctx.arc(tx,y+135,10,0,Math.PI*2);ctx.fill();
+     ctx.strokeStyle='#c5c9c9';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(side?379:41,y+170);ctx.lineTo(side?379:41,y+190);ctx.stroke();
+     ctx.fillStyle='#fff0b2';ctx.beginPath();ctx.arc(side?379:41,y+169,3,0,Math.PI*2);ctx.fill();
+   }
+ }
+}
+function drawRoad(){
+ const h=canvas.height,w=canvas.width,scroll=(game.frame*game.speed)%230;
+ ctx.fillStyle='#283c2d';ctx.fillRect(0,0,w,h);
+ drawCitySide(scroll);
+ const grad=ctx.createLinearGradient(45,0,375,0);grad.addColorStop(0,'#292d32');grad.addColorStop(.5,'#3a3e43');grad.addColorStop(1,'#292d32');
+ ctx.fillStyle=grad;ctx.fillRect(45,0,330,h);
+ // curb lines and road edge markings
+ ctx.fillStyle='#e5dfce';ctx.fillRect(46,0,3,h);ctx.fillRect(371,0,3,h);
+ ctx.fillStyle='#8f9294';ctx.fillRect(52,0,2,h);ctx.fillRect(366,0,2,h);
+ // lane separators, moving down to create forward motion
+ ctx.strokeStyle='#eee9d8';ctx.lineWidth=3;ctx.setLineDash([34,34]);ctx.lineDashOffset=-scroll;
+ ctx.beginPath();ctx.moveTo(155,0);ctx.lineTo(155,h);ctx.moveTo(265,0);ctx.lineTo(265,h);ctx.stroke();ctx.setLineDash([]);
+ // crosswalks / Tehran street markings occasionally
+ if(game.frame%420<42){ctx.fillStyle='#d6d3c9';for(let i=0;i<8;i++)ctx.fillRect(65+i*39,120,20,7)}
+}
+function drawCar(x,y,color,scale=1){
+ ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
+ // shadow, tires, metallic body, glass and lights; top-down view
+ ctx.fillStyle='#111';roundedRect(ctx,-19,-30,38,62,10);ctx.fill();
+ ctx.fillStyle='#090b0d';ctx.fillRect(-20,-22,5,15);ctx.fillRect(15,-22,5,15);ctx.fillRect(-20,10,5,15);ctx.fillRect(15,10,5,15);
+ const g=ctx.createLinearGradient(-16,0,16,0);g.addColorStop(0,'#555b62');g.addColorStop(.22,color);g.addColorStop(.7,color);g.addColorStop(1,'#737b83');
+ ctx.fillStyle=g;roundedRect(ctx,-15,-29,30,58,8);ctx.fill();
+ ctx.fillStyle='#172a38';roundedRect(ctx,-11,-18,22,15,4);ctx.fill();
+ ctx.fillStyle='#243b4b';roundedRect(ctx,-11,5,22,12,3);ctx.fill();
+ ctx.strokeStyle='#aeb8bf';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-13,-1);ctx.lineTo(13,-1);ctx.stroke();
+ ctx.fillStyle='#f8e9bb';ctx.fillRect(-12,-27,7,3);ctx.fillRect(5,-27,7,3);
+ ctx.fillStyle='#d94d45';ctx.fillRect(-12,25,7,3);ctx.fillRect(5,25,7,3);
+ ctx.fillStyle='#0d1115';ctx.fillRect(-14,-8,28,2);ctx.restore();
+}
+function drawCoin(x,y){ctx.save();ctx.shadowColor='#f5c84c';ctx.shadowBlur=12;ctx.fillStyle='#f5c84c';ctx.beginPath();ctx.arc(x,y,11,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#76520b';ctx.font='bold 14px Arial';ctx.textAlign='center';ctx.fillText('₿',x,y+5);ctx.restore()}
+function spawnTraffic(){
+ const lanes=[100,155,265,320];
+ if(game.frame%48===0){const lane=lanes[Math.floor(Math.random()*lanes.length)];game.objects.push({x:lane,y:-45,type:Math.random()<.58?'coin':'enemy',color:['#aeb7bf','#252a30','#f1f1ed'][Math.floor(Math.random()*3)]})}
+ if(game.mode==='رقابت با بات'&&game.frame%105===0){const lane=lanes[Math.floor(Math.random()*lanes.length)];game.objects.push({x:lane,y:-100,type:'bot',color:'#a83b43'})}
+}
+function tick(){
+ if(!game.running)return;
+ const w=canvas.width,h=canvas.height;drawRoad();
+ const boost=game.nitroOn&&game.nitro>0;
+ const actualSpeed=game.speed*(boost?1.75:1);
+ if(boost)game.nitro=Math.max(0,game.nitro-1.1);else game.nitro=Math.min(100,game.nitro+.12);
+ if(game.left)game.x-=boost?6.2:4.3;if(game.right)game.x+=boost?6.2:4.3;
+ game.x=Math.max(78,Math.min(342,game.x));
+ spawnTraffic();
+ const remaining=[];
+ for(const o of game.objects){
+   o.y+=actualSpeed*(o.type==='bot'?1.12:1);
+   if(o.type==='coin')drawCoin(o.x,o.y);else drawCar(o.x,o.y,o.color||'#a83b43',.88);
+   if(o.y>h+50)continue;
+   const closeX=Math.abs(o.x-game.x)<27,closeY=Math.abs(o.y-570)<40;
+   if(o.type==='coin'&&closeX&&closeY){game.coins++;game.score+=100;continue}
+   if((o.type==='enemy'||o.type==='bot')&&closeX&&closeY){
+     if(game.frame-game.lastHitFrame>75){game.life--;game.lastHitFrame=game.frame;game.hitFlash=12}
+     continue;
+   }
+   remaining.push(o);
+ }
+ game.objects=remaining;
+ drawCar(game.x,570,'#c5cbd2',1.02);
+ if(game.hitFlash>0){ctx.fillStyle='rgba(255,50,50,.12)';ctx.fillRect(0,0,w,h);game.hitFlash--}
+ game.frame++;game.score+=1;
+ const shownSpeed=Math.round(actualSpeed*18);
+ document.getElementById('speedValue').textContent=shownSpeed.toLocaleString('fa-IR')+' km/h';
+ document.getElementById('raceCoins').textContent=game.coins.toLocaleString('fa-IR');
+ document.getElementById('bestValue').textContent=Number(state.best||0).toLocaleString('fa-IR');
+ document.getElementById('nitroBar').style.width=game.nitro+'%';
+ document.getElementById('raceStats').textContent=`سکهٔ جمع‌شده: ${game.coins.toLocaleString('fa-IR')} · امتیاز: ${game.score.toLocaleString('fa-IR')} · جان: ${game.life.toLocaleString('fa-IR')}`;
+ if(game.life<=0){endGame(true);return}
+ raf=requestAnimationFrame(tick);
+}
+function setNitro(on){game.nitroOn=on&&game.nitro>0}
+function endGame(result){if(!game.running)return;game.running=false;if(raf!==null)cancelAnimationFrame(raf);raf=null;game.left=false;game.right=false;game.nitroOn=false;if(result){state.coins+=game.coins*100;state.best=Math.max(state.best,game.score);save();document.getElementById('resultTitle').textContent='مسابقه تمام شد!';document.getElementById('resultText').textContent=`راننده: ${state.name} · ماشین: ${data[state.active].name} · امتیاز: ${game.score} · سکه‌های جمع‌شده: ${game.coins} · پاداش: ${game.coins*100} سکه · رکورد: ${state.best}`;document.getElementById('result').classList.remove('hidden')}else show('home')}
+function closeResult(){document.getElementById('result').classList.add('hidden');show('home')}
+function bind(id,key){let b=document.getElementById(id);const on=e=>{e.preventDefault();game[key]=true},off=e=>{e.preventDefault();game[key]=false};b.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(t=>b.addEventListener(t,off))}
+bind('left','left');bind('right','right');const nitroBtn=document.getElementById('nitro');nitroBtn.addEventListener('pointerdown',e=>{e.preventDefault();setNitro(true)});['pointerup','pointercancel','pointerleave'].forEach(t=>nitroBtn.addEventListener(t,e=>{e.preventDefault();setNitro(false)}));document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')game.left=true;if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')game.right=true;if(e.code==='Space')setNitro(true)});document.addEventListener('keyup',e=>{if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')game.left=false;if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')game.right=false;if(e.code==='Space')setNitro(false)});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){game.left=false;game.right=false;game.nitroOn=false;if(game.running&&raf!==null){cancelAnimationFrame(raf);raf=null}}else if(game.running&&raf===null){raf=requestAnimationFrame(tick)}});
+window.addEventListener('blur',()=>{game.left=false;game.right=false;game.nitroOn=false});
+if(state.name){document.getElementById('welcome').classList.add('hidden');if(!state.gift){document.getElementById('driverName').value=state.name;document.getElementById('welcome').classList.remove('hidden')}else show('home')}save();
+</script>
+</body></html>
